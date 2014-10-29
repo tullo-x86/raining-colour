@@ -22,7 +22,7 @@ int bounceFalloff(int pulsePosition, int pixelIndex)
 {
 	int difference = (pixelIndex << 8) - pulsePosition;
 
-	long long falloff = ((long long)difference * difference >> 11);
+	long long falloff = ((long long)difference * difference >> 13);
 	if (falloff > bounceBrightness) return 0;
 
 	return bounceBrightness - falloff;
@@ -46,7 +46,7 @@ void bounceRenderBouncer(int position) {
 	while (val > 0) {
 		int pixelIdx = nextPixel < 0 ? nextPixel + NUM_LEDS : nextPixel;
 		assignGreater(bouncePixBuf + pixelIdx, val);
-		nextPixel++;
+		nextPixel--;
 		val = bounceFalloff(position, nextPixel);
 	}
 }
@@ -72,11 +72,9 @@ inline void bounceRender()
 	{
 		col.v = bouncePixBuf[i];
 		hsv2rgb_rainbow(col, frameBuffer[i]);
-		//frameBuffer[i] = hsvToRgbInt3(bounceHue, MAX_SAT, bouncePixBuf[i]);
 	}
 
 	FastLED.show();
-    //ws2812_setleds(frameBuffer, NUM_LEDS); // Blocks for ~0.7ms
 }
 
 int direction = 1;
@@ -125,7 +123,11 @@ inline void bounceLogic()
 
 inline void bounceLogicNoSplit()
 {
-	if (++bounceHue >= HUE_MAX_RAINBOW) bounceHue -= HUE_MAX_RAINBOW;
+	if (--moveHue <= 0)
+	{
+		moveHue = HUE_RATIO;
+		if (++bounceHue >= HUE_MAX_RAINBOW) bounceHue -= HUE_MAX_RAINBOW;
+	}
 
 	bounceMove();
 }
