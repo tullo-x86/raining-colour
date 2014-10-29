@@ -5,9 +5,10 @@
  *      Author: tullo
  */
 
+#include "FastLED.h"
 #include "bounce.h"
 #include "config.h"
-#include "hsv.h"
+#include "hsv2rgb.h"
 #include <string.h> /* memset */
 #include <util/delay.h>
 #include <stdlib.h>
@@ -21,7 +22,7 @@ int bounceFalloff(int pulsePosition, int pixelIndex)
 {
 	int difference = (pixelIndex << 8) - pulsePosition;
 
-	long long falloff = ((long long)difference * difference / 1024);
+	long long falloff = ((long long)difference * difference >> 11);
 	if (falloff > bounceBrightness) return 0;
 
 	return bounceBrightness - falloff;
@@ -29,6 +30,7 @@ int bounceFalloff(int pulsePosition, int pixelIndex)
 
 void bounceRenderBouncer(int position) {
 	int initialPixel = position >> 8;
+
 	assignGreater(bouncePixBuf + initialPixel, bounceFalloff(position, initialPixel));
 
 	int nextPixel = initialPixel + 1;
@@ -60,36 +62,52 @@ inline void bounceRender()
 	bounceRenderBouncer(truePosition);
 	if (hasReflection) bounceRenderBouncer(reflectionPosition);
 
-	memset(frameBuffer, 0, sizeof(struct cRGB) * NUM_LEDS);
+	memset(frameBuffer, 0, sizeof(struct CRGB) * NUM_LEDS);
+
+	CHSV col;
+	col.h = bounceHue;
+	col.s = 255;
 
 	for (int i = 0; i < NUM_LEDS; i++)
 	{
-		frameBuffer[i] = hsvToRgbInt3(bounceHue, MAX_SAT, bouncePixBuf[i]);
+		col.v = bouncePixBuf[i];
+		hsv2rgb_rainbow(col, frameBuffer[i]);
+		//frameBuffer[i] = hsvToRgbInt3(bounceHue, MAX_SAT, bouncePixBuf[i]);
 	}
 
-    ws2812_setleds(frameBuffer, NUM_LEDS); // Blocks for ~0.7ms
+	FastLED.show();
+    //ws2812_setleds(frameBuffer, NUM_LEDS); // Blocks for ~0.7ms
 }
 
 int direction = 1;
 
+#define SPEED 8
+
 inline void bounceMove()
 {
-	truePosition += 8 * direction;
+	truePosition += SPEED * direction;
 	if(truePosition >= (NUM_LEDS << 8))
 		truePosition -= (NUM_LEDS << 8);
 	else if(truePosition <= 0)
 		truePosition += (NUM_LEDS << 8);
 
-	reflectionPosition -= 8 * direction;
+	reflectionPosition -= SPEED * direction;
 	if(reflectionPosition >= (NUM_LEDS << 8))
 		reflectionPosition -= (NUM_LEDS << 8);
 	else if(reflectionPosition <= 0)
 		reflectionPosition += (NUM_LEDS << 8);
 }
 
+#define HUE_RATIO 3
+int8_t moveHue = HUE_RATIO;
+
 inline void bounceLogic()
 {
-	if (++bounceHue >= MAX_HUE) bounceHue -= MAX_HUE;
+	if (--moveHue <= 0)
+	{
+		moveHue = HUE_RATIO;
+		if (++bounceHue >= HUE_MAX_RAINBOW) bounceHue -= HUE_MAX_RAINBOW;
+	}
 
 	if(hasReflection == 0)
 	{
@@ -107,7 +125,7 @@ inline void bounceLogic()
 
 inline void bounceLogicNoSplit()
 {
-	if (++bounceHue >= MAX_HUE) bounceHue -= MAX_HUE;
+	if (++bounceHue >= HUE_MAX_RAINBOW) bounceHue -= HUE_MAX_RAINBOW;
 
 	bounceMove();
 }

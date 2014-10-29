@@ -2,24 +2,27 @@
 // Author: Daniel Tullemans / "LuminousElement"
 // Created 2014
 
-#include "light_ws2812.h"
+#include "FastLED.h"
 #include <string.h> /* memset */
 #include "config.h"
 #include "mesmer.h"
 #include "bounce.h"
 
+struct CRGB frameBuffer[NUM_LEDS];
+
 int main()
 {
-	memset(frameBuffer, 0, sizeof(struct cRGB) * NUM_LEDS);
-    ws2812_setleds(frameBuffer, NUM_LEDS); // Blocks for ~0.7ms
+	memset(frameBuffer, 0, sizeof(struct CRGB) * NUM_LEDS);
+
+	FastLED.addLeds<NEOPIXEL, 10>(frameBuffer, NUM_LEDS);
 
     while(1) {
     	bounceBegin();
     	bounce(20000UL);
     	bounceEnd();
-
+/*
     	mesmerBegin();
     	mesmer(40000UL);
-    	mesmerEnd();
+    	mesmerEnd();*/
     }
 }

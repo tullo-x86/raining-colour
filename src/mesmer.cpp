@@ -1,6 +1,7 @@
 #include "mesmer.h"
 #include "config.h"
-#include "hsv.h"
+
+#include "FastLED.h"
 #include <util/delay.h>
 
 const unsigned char mesmerFrameMs = 30;
@@ -10,17 +11,14 @@ unsigned char brightness = 0;
 
 void mesmerRotateHue()
 {
-	if (--hueOffset < 0) hueOffset += MAX_HUE;
+	if (--hueOffset < 0) hueOffset += HUE_MAX_RAINBOW;
 }
 
 void mesmerRender()
 {
-	const int hueStep = MAX_HUE / NUM_LEDS;
-	for (int i = 0; i < NUM_LEDS; i++)
-	{
-		frameBuffer[i] = hsvToRgbInt3(hueOffset + hueStep * i, MAX_SAT, brightness);
-	}
-    ws2812_setleds(frameBuffer, NUM_LEDS); // Blocks for ~0.7ms
+	fill_rainbow(frameBuffer, NUM_LEDS, hueOffset, HUE_MAX_RAINBOW / NUM_LEDS);
+
+    FastLED.show(brightness);
 }
 
 void mesmerBegin()
