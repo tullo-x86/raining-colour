@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 Daniel Tullemans <email>
+ * Copyright (c) 2014 Daniel Tullemans <tully@be-lumino.us>
  *
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation
@@ -31,50 +31,73 @@
 #include <stdio.h>
 #include "hsv2rgb.h"
 
-SparksPattern::SparksPattern(int length, int sparkleTrailLength, int valFalloffDistance, uint8_t valMin, uint8_t valMax, int framesBetweenSparks, int startOffset)
+SparksPattern::SparksPattern(CRGB *rgbBuffer,
+	unsigned char length,
+	unsigned char sparkleTrailLength,
+	unsigned char valFalloffDistance,
+    unsigned char valMin,
+    unsigned char valMax,
+    unsigned char framesBetweenSparks,
+    unsigned char startOffset)
 : _length(length),
 _framesUntilNewSpark(startOffset),
 _framesBetweenSparks(framesBetweenSparks),
 _sparkleTrailLength(sparkleTrailLength),
 _valFalloffDistance(valFalloffDistance),
 _valMin(valMin),
-_valMax(valMax)
+_valMax(valMax),
+_sparkCount(1)
 {
-    _rgbBuffer = new CRGB[length];
+    _rgbBuffer = rgbBuffer;
     _hsvBuffer = new CHSV[length];
 
     // Clear "framebuffer"
     for(int i=0; i < _length; i++)
-        _hsvBuffer[i] = CHSV(_backgroundHue, 255, valMax);
+        _hsvBuffer[i] = CHSV(0, 255, valMax);
 
-    _sparks.push_front(Spark(0, length - 1));
+    _maxSparks = length / framesBetweenSparks + 2;
+    if (length % framesBetweenSparks == 0) _maxSparks++;
+
+    _sparks = new Spark[_maxSparks];
+    _sparks[0] = Spark(0, length - 1);
 }
 
 void SparksPattern::Logic()
 {
-
-    for(Spark &spark : _sparks)
-        spark.Position++;
+	for (int i = 0; i < _sparkCount; i++)
+        _sparks[i].Position++;
 
     // Can only destroy a spark if:
     //   - There are at least two sparks
     //  && Spark before it has reached the end
-    if (_sparks.size() > 1)
+    if (_sparkCount > 1)
     {
-        auto spark = _sparks.rbegin();
-        spark++;
+    	Spark &secondToLast = _sparks[_sparkCount - 2];
 
-        if (spark->Position >= (_length - 1))
+        if (secondToLast.Position >= (_length - 1))
         {
-            _sparks.pop_back();
+        	_sparkCount--;
         }
     }
 
     if (--_framesUntilNewSpark == 0)
     {
         _framesUntilNewSpark = _framesBetweenSparks;
-        _sparks.push_front(Spark(rand() % HUE_MAX_RAINBOW));
+        //PushSparkToFront(HUE_MAX_RAINBOW / 2);
+        PushSparkToFront(rand() % HUE_MAX_RAINBOW);
     }
+}
+
+void SparksPattern::PushSparkToFront(unsigned char hue)
+{
+	for (int i = 0; i < _maxSparks - 1; i++)
+	{
+		_sparks[i + 1] = _sparks[i];
+	}
+
+	_sparks[0].Position = 0;
+	_sparks[0].Hue = hue;
+	_sparkCount++;
 }
 
 inline int interpolate(int a, int b, int t, int range_t) {
@@ -83,9 +106,9 @@ inline int interpolate(int a, int b, int t, int range_t) {
            (b*(range_t - t) / range_t);
 }
 
-uint8_t SparksPattern::PixelVal(int leadingSparkPosition, int pixelPosition)
+unsigned char SparksPattern::PixelVal(unsigned char leadingSparkPosition, unsigned char pixelPosition)
 {
-    int distance = leadingSparkPosition - pixelPosition;
+	unsigned char distance = leadingSparkPosition - pixelPosition;
     if (distance > _valFalloffDistance)
         return _valMin;
 
@@ -98,8 +121,10 @@ void SparksPattern::Render()
     int lastSparkHead = -1;
 
     // Iterate forward from pixel 0 to pixel n
-    for(Spark &spark : _sparks)
+    for (int i = 0; i < _sparkCount; i++)
+    //for(Spark &spark : _sparks)
     {
+    	Spark &spark = _sparks[i];
         // - Find the position of this spark
         int startIdx = spark.Position;
 

@@ -3,8 +3,7 @@
 
 #include "pixeltypes.h"
 
-// Five bars of 32 LEDs
-#define NUM_STRIPS 5
+#define NUM_STRIPS 1
 #define LEDS_PER_STRIP 32
 #define NUM_LEDS (NUM_STRIPS * LEDS_PER_STRIP)
 

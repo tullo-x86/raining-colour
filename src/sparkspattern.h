@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 Daniel Tullemans <email>
+ * Copyright (c) 2014 Daniel Tullemans <tully@be-lumino.us>
  *
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation
@@ -27,15 +27,22 @@
 #ifndef SPARKSPATTERN_H
 #define SPARKSPATTERN_H
 
-#include "../../ledstrip.h"
-#include <list>
+#include <stdlib.h>
+#include "pixeltypes.h"
 
 struct Spark;
 
 class SparksPattern
 {
 public:
-    SparksPattern(int length, int sparkleTrailLength, int valFalloffDistance, uint8_t valMin, uint8_t valMax, int framesBetweenSparks, int startOffset = 1);
+    SparksPattern(CRGB *rgbBuffer,
+                  unsigned char length,
+                  unsigned char sparkleTrailLength,
+                  unsigned char valFalloffDistance,
+                  unsigned char valMin,
+                  unsigned char valMax,
+                  unsigned char framesBetweenSparks,
+                  unsigned char startOffset = 1);
     ~SparksPattern();
 
     void Logic();
@@ -44,30 +51,33 @@ public:
     const CRGB *GetRGBData() { return _rgbBuffer; }
 
 private:
-    int _length;
-    int _framesUntilNewSpark;
+    unsigned char _length;
+    unsigned char _framesUntilNewSpark;
 
-    const int _framesBetweenSparks;
-    const int _sparkleTrailLength;
-    const int _valFalloffDistance;
-    const uint8_t _valMin;
-    const uint8_t _valMax;
+    const unsigned char _framesBetweenSparks;
+    const unsigned char _sparkleTrailLength;
+    const unsigned char _valFalloffDistance;
+    const unsigned char _valMin;
+    const unsigned char _valMax;
 
-    std::list<Spark> _sparks;
+    Spark *_sparks;
+    unsigned char _sparkCount;
+    unsigned char _maxSparks;
 
     CRGB *_rgbBuffer;
     CHSV *_hsvBuffer;
 
-    uint8_t _backgroundHue;
-
-    uint8_t PixelVal(int leadingSparkPosition, int pixelPosition);
+    unsigned char PixelVal(unsigned char leadingSparkPosition, unsigned char pixelPosition);
+    void PushSparkToFront(unsigned char hue);
 };
 
 struct Spark
 {
-    Spark(uint8_t h, int position = 0) : Hue(h), Position(position) { }
-    uint8_t Hue;
-    unsigned int Position;
+	Spark() : Hue(0), Position(0) { }
+	Spark(const Spark &rhs) { Hue = rhs.Hue; Position = rhs.Position; }
+    Spark(unsigned char h, unsigned char position = 0) : Hue(h), Position(position) { }
+    unsigned char Hue;
+    unsigned char Position;
 };
 
 #endif // SPARKSPATTERN_H

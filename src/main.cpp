@@ -7,22 +7,22 @@
 #include "config.h"
 #include "mesmer.h"
 #include "bounce.h"
+#include "sparkspattern.h"
+#include <util/delay.h>
 
 struct CRGB frameBuffer[NUM_LEDS];
 
 int main()
 {
 	memset(frameBuffer, 0, sizeof(struct CRGB) * NUM_LEDS);
-
 	FastLED.addLeds<NEOPIXEL, 10>(frameBuffer, NUM_LEDS);
 
-    while(1) {
-    	bounceBegin();
-    	bounce(20000UL);
-    	bounceEnd();
+	SparksPattern pattern(frameBuffer, LEDS_PER_STRIP, 3, 10, 28, 128, 20);
 
-    	mesmerBegin();
-    	mesmer(40000UL);
-    	mesmerEnd();
+    while(1) {
+    	pattern.Logic();
+    	pattern.Render();
+    	FastLED.show();
+        _delay_ms(35);
     }
 }
