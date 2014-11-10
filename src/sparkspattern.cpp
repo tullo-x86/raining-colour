@@ -56,7 +56,7 @@ _sparkCount(1)
         _hsvBuffer[i] = CHSV(0, 255, valMax);
 
     _maxSparks = length / framesBetweenSparks + 2;
-    if (length % framesBetweenSparks == 0) _maxSparks++;
+    if (length % framesBetweenSparks == 0) _maxSparks--;
 
     _sparks = new Spark[_maxSparks];
     _sparks[0] = Spark(0, length - 1);
@@ -90,7 +90,7 @@ void SparksPattern::Logic()
 
 void SparksPattern::PushSparkToFront(unsigned char hue)
 {
-	for (int i = 0; i < _maxSparks - 1; i++)
+	for (int i = _maxSparks - 2; i >= 0; i--)
 	{
 		_sparks[i + 1] = _sparks[i];
 	}
