@@ -20,9 +20,9 @@ int main()
     	bounceBegin();
     	bounce(20000UL);
     	bounceEnd();
-/*
+
     	mesmerBegin();
     	mesmer(40000UL);
-    	mesmerEnd();*/
+    	mesmerEnd();
     }
 }

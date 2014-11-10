@@ -16,7 +16,7 @@ void mesmerRotateHue()
 
 void mesmerRender()
 {
-	fill_rainbow(frameBuffer, NUM_LEDS, hueOffset, HUE_MAX_RAINBOW / NUM_LEDS);
+	fill_rainbow(frameBuffer, NUM_LEDS, hueOffset, (HUE_MAX_RAINBOW + 1) / NUM_LEDS);
 
     FastLED.show(brightness);
 }
