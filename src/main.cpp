@@ -19,11 +19,11 @@ int main()
 
 	SparksPattern patterns[NUM_STRIPS] =
 	{
-		SparksPattern(frameBuffer + (LEDS_PER_STRIP * 0), LEDS_PER_STRIP, 3, 18, 28, 128, 24),
-		SparksPattern(frameBuffer + (LEDS_PER_STRIP * 1), LEDS_PER_STRIP, 3,  9, 28, 128, 12),
-		SparksPattern(frameBuffer + (LEDS_PER_STRIP * 2), LEDS_PER_STRIP, 3, 12, 28, 128, 16),
-		SparksPattern(frameBuffer + (LEDS_PER_STRIP * 3), LEDS_PER_STRIP, 3, 18, 28, 128, 24),
-		SparksPattern(frameBuffer + (LEDS_PER_STRIP * 4), LEDS_PER_STRIP, 3, 10, 28, 128, 20)
+		SparksPattern(frameBuffer + (LEDS_PER_STRIP * 0), LEDS_PER_STRIP, 3, 14, 28, 128, 21),
+		SparksPattern(frameBuffer + (LEDS_PER_STRIP * 1), LEDS_PER_STRIP, 2, 10, 48,  96, 15),
+		SparksPattern(frameBuffer + (LEDS_PER_STRIP * 2), LEDS_PER_STRIP, 3,  8, 48,  96, 12),
+		SparksPattern(frameBuffer + (LEDS_PER_STRIP * 3), LEDS_PER_STRIP, 3, 12, 28, 128, 18),
+		SparksPattern(frameBuffer + (LEDS_PER_STRIP * 4), LEDS_PER_STRIP, 3,  6, 48,  96,  9)
 	};
 
     while(1) {
@@ -34,6 +34,14 @@ int main()
     	}
 
     	FastLED.show();
-        _delay_ms(35);
+        _delay_ms(12);
+
+    	for (unsigned char i = 0; i < NUM_STRIPS; i++)
+    	{
+    		patterns[i].Render();
+    	}
+
+    	FastLED.show();
+        _delay_ms(12);
     }
 }
