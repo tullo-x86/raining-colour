@@ -34,7 +34,7 @@ int main()
     	}
 
     	FastLED.show();
-        _delay_ms(12);
+        _delay_ms(4);
 
     	for (unsigned char i = 0; i < NUM_STRIPS; i++)
     	{
@@ -42,6 +42,14 @@ int main()
     	}
 
     	FastLED.show();
-        _delay_ms(12);
+        _delay_ms(4);
+
+        for (unsigned char i = 0; i < NUM_STRIPS; i++)
+        {
+            patterns[i].Render();
+        }
+
+        FastLED.show();
+        _delay_ms(4);
     }
 }
